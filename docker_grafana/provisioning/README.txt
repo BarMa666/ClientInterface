@@ -1,0 +1,2 @@
+Настройки можно достать из графаны, сначала заходим под админом, создаем Datasource(так же можно добавить и Dashboard).
+После этого отправляем запрос curl -X GET http://$grafana_host$:3000/api/datasources -H ‘Authorization: Basic YWRtaW46YWRtaW4=’
