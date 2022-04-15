@@ -1,0 +1,32 @@
+version: '3.5'
+
+services:
+  db:
+    tty: true
+    image: mysql
+    container_name: mysql_container
+    restart: always
+    networks:
+      - statistics_gather_network
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpw
+      MYSQL_DATABASE: incoming_data
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - "./scripts/schema.sql:/docker-entrypoint-initdb.d/1.sql"
+      - "./scripts/users.sql:/docker-entrypoint-initdb.d/2.sql"
+    healthcheck:
+      test: "/usr/bin/mysql --user=root --password=rootpw --execute \"SHOW DATABASES;\""
+      interval: 2s
+      timeout: 20s
+      retries: 10
+
+networks:
+  statistics_gather_network:
+    name: statistics_gather
+    driver: bridge
+    external: false

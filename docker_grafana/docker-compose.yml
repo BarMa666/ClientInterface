@@ -1,0 +1,25 @@
+version: '3.5'
+
+services:
+  grafana:
+    tty: true
+    image: grafana/grafana:8.0.2-ubuntu
+    container_name: grafana_container
+    restart: always
+    networks:
+      - statistics_gather_network
+    environment:  
+      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_AUTH_DISABLE_SIGNOUT_MENU: "true"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SECURITY_ADMIN_PASSWORD: adminpw
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./provisioning/:/etc/grafana/provisioning/
+      
+networks:
+  statistics_gather_network:
+    name: statistics_gather
+    external: true
