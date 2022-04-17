@@ -9,9 +9,6 @@ datasources:
   user: grafana
   database: incoming_data
   basicAuth: false
-  basicAuthUser:
-  basicAuthPassword:
-  withCredentials:
   isDefault: true
   jsonData:
      tlsAuth: false
