@@ -17,8 +17,8 @@ services:
     ports:
       - '3000:3000'
     volumes:
-      - ./provisioning/datasources/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
-      - ./provisioning/dashboards/dashboards.yml:/etc/grafana/provisioning/dashboards/datasource.yml
+      - ./provisioning/datasources/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./provisioning/dashboards/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
       
 networks:
   statistics_gather_network:
