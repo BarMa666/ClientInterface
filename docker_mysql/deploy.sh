@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sudo docker-compose rm -v -f db && docker-compose up -d
+sudo docker-compose rm -v -f mysql && docker-compose up -d

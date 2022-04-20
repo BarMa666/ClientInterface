@@ -1,7 +1,7 @@
 version: '3.5'
 
 services:
-  db:
+  mysql:
     tty: true
     image: mysql
     container_name: mysql_container
