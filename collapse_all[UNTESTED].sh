@@ -10,7 +10,7 @@ while true; do
 			sudo docker rm grafana_container --force; 
 			sudo docker rm app_container --force; 
 			sudo docker rm mysql_container --force;
-			sudo docker rmi grafana/grafana --force; 
+			sudo docker rmi grafana/grafana:8.0.2-ubuntu --force; 
 			sudo docker rmi app --force; 
 			sudo docker rmi mysql --force;
 			sudo docker system prune -y;
