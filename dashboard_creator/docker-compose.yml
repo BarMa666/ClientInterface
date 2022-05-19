@@ -1,0 +1,16 @@
+version: '3.5'
+
+services:
+  dashboard_creator:
+    tty: true
+    container_name: dashboard_creator_container
+    restart: always
+    networks:
+      - statistics_gather_network
+    build:
+      context: .
+
+networks:
+  statistics_gather_network:
+    name: statistics_gather
+    external: true
