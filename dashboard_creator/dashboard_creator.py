@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import requests
 import json
 import logging
@@ -8,35 +10,6 @@ import configparser
 
 headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer eyJrIjoiQjlqTG50cHJna2NOR2JCOUJjYUNFdm5scTdOQzRZYXAiLCJuIjoidXBkYXRlciIsImlkIjoxfQ=='}
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--template_path', type=str, default='templates/basic_template.json', help='path to template json file')
-parser.add_argument('--cfg_path', type=str, default='configs/config.ini', help='path to cfg file with settings')
-
-args = parser.parse_args()
-template_path = args["template_path"]
-if not path:
-    logging.error('no path to template file')
-    return -1
-
-config_path = args["cfg_path"]
-if not path:
-    logging.error('no path to config file')
-    return -1
-
-config = configparser.ConfigParser()
-
-connection = pymysql.connect(host=config['MySQL']['host'],
-                             user=config['MySQL']['user'],
-                             password=config['MySQL']['password'],
-                             database=config['MySQL']['database'],
-                             port=int(config['MySQL']['port']),
-                             charset='utf8mb4',
-                             cursorclass=pymysql.cursors.DictCursor)
-
-dashboard_template = {}
-with open('template_path', 'r') as dashboard_template_file:
-    template = json.load(dashboard_template_file)
-    print(data)
 
 def get_new_dashboards()->dict:
     new_dashboards = []
@@ -62,7 +35,7 @@ def get_panels(source_id)->dict:
     return raw_sql
 
 
-def add_new_dashboards(dashboards)->None:
+def add_new_dashboards(dashboards, template)->None:
     for source_id, source_name in dashboards:
         raw_sql = get_panels(source_id)
         for title, sql_request in raw_sql:
@@ -74,11 +47,56 @@ def add_new_dashboards(dashboards)->None:
 
 
 if __name__ == "__main__":
-    interval = config["OTHER"][]"interval"]
-    if not interval:
-        interval = 300 # 2 minutes default
-    while True:
-        dashboards = get_new_dashboards()
-        if dashboards:
-            add_new_dashboards(dashboards)
-        time.sleep(interval)
+    try:
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--template_path', type=str, default='templates/basic_template.json', help='path to template json file')
+        parser.add_argument('--cfg_path', type=str, default='configs/config.ini', help='path to cfg file with settings')
+
+        args = parser.parse_args()
+        template_path = args.template_path
+        if not template_path:
+            logging.error('no path to template file')
+            exit(-1)
+
+        config_path = args.cfg_path
+        if not config_path:
+            logging.error('no path to config file')
+            exit(-1)
+
+        print(template_path)
+        print(config_path)
+
+        config = configparser.ConfigParser()
+        config.read(config_path)
+        print(config['MySQL']['host'])
+        print(config['MySQL']['user'])
+        print(config['MySQL']['password'])
+        print(config['MySQL']['database'])
+        print(config['MySQL']['port'])
+
+        connection = pymysql.connect(host=config['MySQL']['host'],
+                                     user=config['MySQL']['user'],
+                                     password=config['MySQL']['password'],
+                                     database=config['MySQL']['database'],
+                                     port=int(config['MySQL']['port']),
+                                     charset='utf8mb4',
+                                     cursorclass=pymysql.cursors.DictCursor)
+
+        dashboard_template = {}
+        with open(template_path, 'r') as dashboard_template_file:
+            template = json.load(dashboard_template_file)
+            print(template)
+
+        interval = int(config["OTHER"]["interval"])
+        if not interval:
+            interval = 300 # 2 minutes default
+        while True:
+            print('start')
+            dashboards = get_new_dashboards()
+            if dashboards:
+                add_new_dashboards(dashboards,template)
+            print('end')
+            time.sleep(interval)
+    except Exception as e:
+        print(e)
+        exit(-1)

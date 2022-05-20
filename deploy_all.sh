@@ -6,3 +6,6 @@ sudo ./deploy.sh
 
 cd ../docker_grafana
 sudo ./deploy.sh
+
+cd ../dashboard_creator
+sudo ./deploy.sh

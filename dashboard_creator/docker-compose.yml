@@ -3,12 +3,16 @@ version: '3.5'
 services:
   dashboard_creator:
     tty: true
+    image: dashboard_creator
     container_name: dashboard_creator_container
     restart: always
     networks:
       - statistics_gather_network
     build:
       context: .
+      args:
+        - templates:"templates/template.json"
+        - config:"configs/config.ini"
 
 networks:
   statistics_gather_network:

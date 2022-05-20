@@ -2,7 +2,7 @@ USE incoming_data;
 
 CREATE TABLE data_source(
     id integer NOT NULL AUTO_INCREMENT,
-    source_name varchar(50) NOT NULL,
+    source_name varchar(50) NOT NULL UNIQUE,
     PRIMARY KEY (id),
     UNIQUE (id)
     );
