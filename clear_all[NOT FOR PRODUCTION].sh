@@ -7,6 +7,7 @@ while true; do
 			sudo docker stop $(sudo docker ps -a -q); 
 			sudo docker rm $(sudo docker ps -a -q) --force; 
 			sudo docker rmi $(sudo docker images -a -q) --force; 
+			sudo docker volume prune --force; 
 			sudo docker system prune --force; break;;
         [Nn]* ) exit;;
         * ) echo "Please answer yes or no.";;
