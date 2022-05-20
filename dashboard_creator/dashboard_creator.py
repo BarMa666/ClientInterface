@@ -8,20 +8,23 @@ import pymysql
 import time
 import configparser
 
-headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer eyJrIjoiQjlqTG50cHJna2NOR2JCOUJjYUNFdm5scTdOQzRZYXAiLCJuIjoidXBkYXRlciIsImlkIjoxfQ=='}
+headers = {'Accept': 'application/json', 'Content-Type': 'application/json; charset=UTF-8', 'Authorization': 'Bearer eyJrIjoidDBzNzZOOHl1cXpNaU5vemZteWJ6a0lRdkMxUnZzVXEiLCJuIjoic3RhdGlzdGljc19nYXRoZXJfa2V5IiwiaWQiOjF9'}
 
 
 def get_new_dashboards()->dict:
-    new_dashboards = []
+    new_dashboards = {}
     with connection.cursor() as cursor:
         sql = "SELECT id, source_name FROM data_source"
         cursor.execute(sql)
         sources = cursor.fetchall()
-        for id, source_name in sources:
-            print(source_name)
-            response = requests.get(f'https://late-beans-mate-90-188-10-160.loca.lt/api/dashboards/{source_name}', headers=headers)
-            if response.status_code != 200:
-                new_dashboards[id] = source_name
+        print(sources)
+        for source in sources:
+            print(source)
+            print(f"https://metal-glasses-peel-90-188-10-160.loca.lt/api/dashboards/{source['source_name']}")
+            response = requests.get(f"https://metal-glasses-peel-90-188-10-160.loca.lt/api/search?query={source['source_name']}", headers=headers)
+            print(response.json())
+            if not response.json():
+                new_dashboards[source['id']] = source['source_name']
     return new_dashboards
 
 
@@ -30,20 +33,30 @@ def get_panels(source_id)->dict:
     with connection.cursor() as cursor:
         sql = f"SELECT id, field_name FROM data_field WHERE source_id={source_id}"
         cursor.execute(sql)
-        for id, field_name in cursor.fetchall():
-            raw_sql[field_name] = f"SELECT UNIX_TIMESTAMP(CONVERT_TZ(date,'+00:00','-7:00')) as time, field_value as value FROM data_main WHERE (UNIX_TIMESTAMP(CONVERT_TZ(date,'+00:00','-7:00')) BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}) AND data_main.field_id = {id} ORDER BY date ASC;"
+        fields = cursor.fetchall()
+        for field in fields:
+            raw_sql[field['field_name']] = "SELECT UNIX_TIMESTAMP(CONVERT_TZ(date,'+00:00','-7:00')) as time, field_value as value FROM data_main WHERE (UNIX_TIMESTAMP(CONVERT_TZ(date,'+00:00','-7:00')) BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}) AND data_main.field_id = %d ORDER BY date ASC;" % int(field['id'])
     return raw_sql
 
 
 def add_new_dashboards(dashboards, template)->None:
-    for source_id, source_name in dashboards:
-        raw_sql = get_panels(source_id)
-        for title, sql_request in raw_sql:
-            template["panels"]["title"] = title
-            template["panels"]["targets"]["rawSql"] = sql_request
-        template["title"] = source_name
-        response = requests.post('https://late-beans-mate-90-188-10-160.loca.lt/api/dashboards/db', headers=headers, json=template)
-        print(response.content)
+    for source_id in dashboards:
+        fields = get_panels(source_id)
+        if len(template["dashboard"]["panels"]) == 0:
+            logging.error('template has no panels')
+            exit(-1)
+        panel = template["dashboard"]["panels"][0]
+        if len(panel["targets"][0]["rawSql"]) == 0:
+            logging.error('template has no raw sql')
+            exit(-1)
+        template["panels"] = []
+        for title in fields:
+            panel["title"] = title
+            panel["targets"][0]["rawSql"] = fields[title]
+            template["dashboard"]["panels"].append(panel)
+        template["dashboard"]["title"] = dashboards[source_id]
+        response = requests.post('https://metal-glasses-peel-90-188-10-160.loca.lt/api/dashboards/db', headers=headers, json=template)
+        print(response.status_code, response.content)
 
 
 if __name__ == "__main__":
@@ -63,16 +76,8 @@ if __name__ == "__main__":
             logging.error('no path to config file')
             exit(-1)
 
-        print(template_path)
-        print(config_path)
-
         config = configparser.ConfigParser()
         config.read(config_path)
-        print(config['MySQL']['host'])
-        print(config['MySQL']['user'])
-        print(config['MySQL']['password'])
-        print(config['MySQL']['database'])
-        print(config['MySQL']['port'])
 
         connection = pymysql.connect(host=config['MySQL']['host'],
                                      user=config['MySQL']['user'],
